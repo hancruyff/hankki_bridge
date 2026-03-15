@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>페이지 이동 중</title>
+</head>
+<body>
+    <script>
+        /**
+         * 1. 환경 설정
+         */
+        const NAVER_MKT_LINK = "https://mkt.shopping.naver.com/link/69a8ff184a57b458ec7a3fdc";
+        
+        // 현재 브릿지 페이지에 붙어온 쿼리 스트링 (?nt_source=... 등) 전체를 가져옵니다.
+        const queryString = window.location.search; 
+
+        // 마케팅 링크와 쿼리 스트링을 합칩니다.
+        const finalUrl = NAVER_MKT_LINK + queryString;
+
+        /**
+         * 2. 탈출 및 리다이렉트 로직
+         */
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isKakao = userAgent.includes("kakaotalk");
+
+        if (isKakao) {
+            // 카카오톡 인앱 브라우저라면: 외부 브라우저 실행 스킴 호출
+            // 주의: URL 전체를 인코딩해야 파라미터가 깨지지 않습니다.
+            location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(finalUrl);
+        } else {
+            // 그 외(이미 크롬, 사파리 등)라면: 바로 네이버로 이동
+            location.href = finalUrl;
+        }
+    </script>
+
+    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
+        <p>쇼핑몰로 안전하게 이동 중입니다...</p>
+    </div>
+</body>
+</html>
