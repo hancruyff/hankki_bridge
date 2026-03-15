@@ -7,35 +7,38 @@
 </head>
 <body>
     <script>
-        /**
-         * 1. 환경 설정
-         */
+        // 1. 네이버 마케팅링크 원본 (뒤에 아무것도 붙이지 않은 상태)
         const NAVER_MKT_LINK = "https://mkt.shopping.naver.com/link/69a8ff184a57b458ec7a3fdc";
         
-        // 현재 브릿지 페이지에 붙어온 쿼리 스트링 (?nt_source=... 등) 전체를 가져옵니다.
+        // 2. 현재 브릿지 페이지의 파라미터 가져오기 (?nt_source=... 등)
         const queryString = window.location.search; 
 
-        // 마케팅 링크와 쿼리 스트링을 합칩니다.
-        const finalUrl = NAVER_MKT_LINK + queryString;
+        // 3. 주소 합치기 로직 개선
+        // 마케팅링크에 이미 ?가 있을 수도 있으므로 안전하게 처리합니다.
+        let finalUrl = NAVER_MKT_LINK;
+        if (queryString) {
+            const separator = NAVER_MKT_LINK.includes('?') ? '&' : '?';
+            // 쿼리 스트링의 첫 글자(?)를 떼고 결합
+            finalUrl += separator + queryString.substring(1);
+        }
 
-        /**
-         * 2. 탈출 및 리다이렉트 로직
-         */
         const userAgent = navigator.userAgent.toLowerCase();
         const isKakao = userAgent.includes("kakaotalk");
 
         if (isKakao) {
-            // 카카오톡 인앱 브라우저라면: 외부 브라우저 실행 스킴 호출
-            // 주의: URL 전체를 인코딩해야 파라미터가 깨지지 않습니다.
+            // 카카오톡 탈출용 (URL 전체를 완벽하게 인코딩)
             location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(finalUrl);
         } else {
-            // 그 외(이미 크롬, 사파리 등)라면: 바로 네이버로 이동
+            // 그 외 일반 브라우저
             location.href = finalUrl;
         }
     </script>
 
-    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
-        <p>쇼핑몰로 안전하게 이동 중입니다...</p>
+    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; text-align: center;">
+        <div>
+            <p>쇼핑몰로 안전하게 이동 중입니다...</p>
+            <p style="font-size: 0.8rem; color: #888;">잠시만 기다려 주세요.</p>
+        </div>
     </div>
 </body>
 </html>
