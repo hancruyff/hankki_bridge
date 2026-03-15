@@ -1,44 +1,29 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>페이지 이동 중</title>
-</head>
-<body>
-    <script>
-        // 1. 네이버 마케팅링크 원본 (뒤에 아무것도 붙이지 않은 상태)
-        const NAVER_MKT_LINK = "https://mkt.shopping.naver.com/link/69a8ff184a57b458ec7a3fdc";
-        
-        // 2. 현재 브릿지 페이지의 파라미터 가져오기 (?nt_source=... 등)
-        const queryString = window.location.search; 
+<script>
+    // 1. 네이버 마케팅 링크 (원본)
+    const MKT_LINK = "https://mkt.shopping.naver.com/link/69a8ff184a57b458ec7a3fdc";
 
-        // 3. 주소 합치기 로직 개선
-        // 마케팅링크에 이미 ?가 있을 수도 있으므로 안전하게 처리합니다.
-        let finalUrl = NAVER_MKT_LINK;
-        if (queryString) {
-            const separator = NAVER_MKT_LINK.includes('?') ? '&' : '?';
-            // 쿼리 스트링의 첫 글자(?)를 떼고 결합
-            finalUrl += separator + queryString.substring(1);
-        }
+    // 2. 현재 브릿지 페이지 주소창에 붙은 모든 파라미터 (?nt_source=... 등)
+    const currentParams = window.location.search;
 
-        const userAgent = navigator.userAgent.toLowerCase();
-        const isKakao = userAgent.includes("kakaotalk");
-
-        if (isKakao) {
-            // 카카오톡 탈출용 (URL 전체를 완벽하게 인코딩)
-            location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(finalUrl);
+    // 3. 파라미터 결합 로직 (유실 방지)
+    let finalDestination = MKT_LINK;
+    if (currentParams) {
+        // 마케팅 링크에 이미 ?가 있으면 &로, 없으면 ?로 파라미터를 연결합니다.
+        const separator = MKT_LINK.indexOf('?') !== -1 ? '&' : '';
+        if (separator === '&') {
+            finalDestination += separator + currentParams.substring(1);
         } else {
-            // 그 외 일반 브라우저
-            location.href = finalUrl;
+            finalDestination += currentParams;
         }
-    </script>
+    }
 
-    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; text-align: center;">
-        <div>
-            <p>쇼핑몰로 안전하게 이동 중입니다...</p>
-            <p style="font-size: 0.8rem; color: #888;">잠시만 기다려 주세요.</p>
-        </div>
-    </div>
-</body>
-</html>
+    // 4. 실행 로직
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.indexOf('kakaotalk') !== -1) {
+        // 카카오톡 탈출 (전체 URL 인코딩 필수)
+        location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(finalDestination);
+    } else {
+        // 이미 외부 브라우저라면 바로 이동
+        location.replace(finalDestination);
+    }
+</script>
